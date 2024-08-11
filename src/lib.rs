@@ -10,6 +10,10 @@ fn ident_to_literal(ident: &Ident) -> proc_macro2::TokenStream {
     return quote! { #literal };
 }
 
+fn into_wrapper_name(func_name: &Ident) -> Ident {
+    return format_ident!("__internal_{}_wrapper", func_name);
+}
+
 fn extract_array_dtype(type_path: &TypePath) -> Option<&Ident> {
     let last_segment = type_path.path.segments.last()?;
     let args = match &last_segment.arguments {
@@ -90,7 +94,7 @@ pub fn pyo3_wrapper(_attr: TokenStream, item: TokenStream) -> TokenStream {
     }
 
     let return_type = process_return_type(output).unwrap();
-    let wrapper_name = format_ident!("{}_wrapper", name);
+    let wrapper_name = into_wrapper_name(name);
     let pyo3_name = ident_to_literal(name);
     let rust_args_names = rust_args.iter().map(|arg| quote! { #arg }).collect::<Vec<_>>();
 
@@ -133,7 +137,7 @@ impl Parse for FunctionNames {
 pub fn create_pymodule(input: TokenStream) -> TokenStream {
     let FunctionNames { module_name, functions } = parse_macro_input!(input as FunctionNames);
 
-    let wrapped_func_names = functions.iter().map(|name| format_ident!("{}_wrapper", name));
+    let wrapped_func_names = functions.iter().map(|name| into_wrapper_name(name));
 
     let generated = quote! {
         #[pyo3::pymodule]
