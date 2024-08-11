@@ -18,3 +18,4 @@ pyo3 = { version = "0.20.0", features = ["extension-module"] }
 syn = "2.0.71"
 quote = "1.0.36"
 pyo3-macros = "0.22.2"
+proc-macro2 = "1.0.86"
